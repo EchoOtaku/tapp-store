@@ -67,3 +67,74 @@ test('one-time reminder applies the selected local time and offset', () => {
   assert.equal(at.getHours(), 8);
   assert.equal(at.getMinutes(), 15);
 });
+
+test('annual reminders use an absolute next occurrence instead of timezone-ambiguous cron', () => {
+  const event = { id: 'annual', title: 'Annual', date: '2024-06-20', annual: true, reminders: { enabled: true, offsets: [7], time: '08:15' } };
+  const task = sandbox.daysReminderTask(event, 7);
+  assert.equal(task.scheduleType, 'once');
+  assert.equal(Number.isFinite(task.schedule.at), true);
+  assert.equal(Object.hasOwn(task.schedule, 'cron'), false);
+  assert.equal(new Date(task.schedule.at).getHours(), 8);
+  assert.equal(new Date(task.schedule.at).getMinutes(), 15);
+});
+
+test('reconciliation restores missing reminder tasks without replacing matching tasks', async () => {
+  const event = { id: 'annual', title: 'Annual', date: '2024-06-20', annual: true, reminders: { enabled: true, offsets: [7], time: '08:15' } };
+  const desired = sandbox.daysReminderTask(event, 7);
+  const apiTask = {
+    task_id: desired.taskId,
+    name: desired.name,
+    schedule_type: desired.scheduleType,
+    schedule: desired.schedule,
+    execution_target: desired.executionTarget,
+    backend_actions: desired.backendActions,
+    missed_policy: desired.missedPolicy,
+  };
+  const registered = [];
+  const removed = [];
+  sandbox.Tapp = {
+    permissions: { includes(permission) { return permission === 'scheduler:register'; } },
+    scheduler: {
+      async list() { return [apiTask]; },
+      async register(task) { registered.push(task); },
+      async unregister(taskId) { removed.push(taskId); },
+    },
+  };
+  await sandbox.daysReconcileReminders([event]);
+  assert.deepEqual(registered, []);
+  assert.deepEqual(removed, []);
+
+  sandbox.Tapp.scheduler.list = async () => [];
+  await sandbox.daysReconcileReminders([event]);
+  assert.equal(registered.length, 1);
+  assert.equal(registered[0].taskId, desired.taskId);
+});
+
+test('failed reconciliation remains immediately retryable', async () => {
+  let attempts = 0;
+  sandbox.Tapp = {
+    permissions: { includes(permission) { return permission === 'scheduler:register'; } },
+    scheduler: {
+      async list() {
+        attempts += 1;
+        if (attempts === 1) throw new Error('temporary scheduler failure');
+        return [];
+      },
+      async register() {},
+      async unregister() {},
+    },
+  };
+  sandbox.daysReminderReconcilePromise = null;
+  sandbox.daysReminderReconciledAt = 0;
+  await assert.rejects(sandbox.daysRequestReminderReconcile([], true), /temporary scheduler failure/);
+  await sandbox.daysRequestReminderReconcile([], false);
+  assert.equal(attempts, 2);
+});
+
+test('page mount and resume both request reminder reconciliation', () => {
+  const mountStart = source.indexOf('daysMountPage = async function');
+  const destroyStart = source.indexOf('var daysDestroyPageBase', mountStart);
+  const lifecycleStart = source.lastIndexOf("if (typeof Tapp !== 'undefined' && Tapp.lifecycle)");
+  assert.match(source.slice(mountStart, destroyStart), /daysRequestReminderReconcile\(daysPageState\.events, true\)/);
+  assert.match(source.slice(lifecycleStart), /onResume[\s\S]*daysRequestReminderReconcile\(daysPageState\.events, false\)/);
+});

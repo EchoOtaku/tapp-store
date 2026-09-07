@@ -58,7 +58,7 @@ cn.echootaku.days/
 | `ui:notification` | 显示保存和删除结果 |
 | `ui:confirm` | 删除前确认 |
 | `widget:register` | 声明主页 Widget |
-| `scheduler:register` | 注册持久化后台提醒；需要登录并由管理员允许 |
+| `scheduler:register` | 注册持久化后台提醒；需要登录并由管理员允许。提醒按当前设备本地时区计算为下一次绝对触发时间，并在打开或恢复朝夕时自动核对续订 |
 | `ai:generate` | 生成结构化事件草稿；需要管理员配置 Myriad AI |
 
 AI 与提醒均为可降级能力：权限或管理员配置不可用时，基础记录、视图、备份与 Widget 仍可正常使用。导入文件上限为 1 MiB，只接受 `cn.echootaku.days.backup` 格式的版本 1 JSON；合并导入保留当前主题，同 ID 日子以导入内容为准。

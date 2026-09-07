@@ -776,6 +776,15 @@ function daysReminderDate(event, offset) {
   if (event.annual && target.getTime() <= Date.now()) { target = daysOccurrenceInYear(event, new Date().getFullYear() + 1); target.setHours(Number(parts[0]), Number(parts[1]), 0, 0); target.setDate(target.getDate() - Number(offset)); }
   return target;
 }
+function daysReminderTask(event, offset) {
+  var at = daysReminderDate(event, offset); if (!at || at.getTime() <= Date.now()) return null;
+  return { taskId: daysReminderTaskId(event.id, offset), name: daysT('reminderTaskName', { title: event.title }), scheduleType: 'once', schedule: { at: at.getTime() }, executionTarget: 'backend', backendActions: [{ type: 'notification.queue', title: event.title, message: offset === 0 ? daysT('reminderToday') : daysT('reminderBefore', { count: offset }) }], missedPolicy: 'skip' };
+}
+function daysReminderTaskMatches(current, desired) {
+  if (!current || !desired) return false;
+  var scheduleType = current.scheduleType || current.schedule_type; var executionTarget = current.executionTarget || current.execution_target; var missedPolicy = current.missedPolicy || current.missed_policy; var backendActions = current.backendActions || current.backend_actions;
+  return String(scheduleType || '') === desired.scheduleType && Number(current.schedule && current.schedule.at) === desired.schedule.at && String(current.name || '') === desired.name && String(executionTarget || '') === desired.executionTarget && String(missedPolicy || '') === desired.missedPolicy && JSON.stringify(backendActions || []) === JSON.stringify(desired.backendActions);
+}
 async function daysUnregisterReminderTasks(event) {
   if (!event || !Tapp.scheduler || typeof Tapp.scheduler.unregister !== 'function' || !daysPermissionGranted('scheduler:register')) return;
   await Promise.all(DAYS_REMINDER_OFFSETS.map(function (offset) { return Tapp.scheduler.unregister(daysReminderTaskId(event.id, offset)).catch(function () {}); }));
@@ -783,19 +792,32 @@ async function daysUnregisterReminderTasks(event) {
 async function daysSyncReminderTasks(event, previous) {
   if (!daysPermissionGranted('scheduler:register') || !Tapp.scheduler || typeof Tapp.scheduler.register !== 'function') return { ok: false, reason: 'unavailable' };
   await daysUnregisterReminderTasks(previous || event); if (!event.reminders || !event.reminders.enabled) return { ok: true };
-  var tasks = event.reminders.offsets.map(function (offset) {
-    var at = daysReminderDate(event, offset); if (!at || (!event.annual && at.getTime() <= Date.now())) return null;
-    var scheduleType = event.annual ? 'cron' : 'once'; var schedule = event.annual ? { cron: at.getMinutes() + ' ' + at.getHours() + ' ' + at.getDate() + ' ' + (at.getMonth() + 1) + ' *' } : { at: at.getTime() };
-    return Tapp.scheduler.register({ taskId: daysReminderTaskId(event.id, offset), name: daysT('reminderTaskName', { title: event.title }), scheduleType: scheduleType, schedule: schedule, executionTarget: 'backend', backendActions: [{ type: 'notification.queue', title: event.title, message: offset === 0 ? daysT('reminderToday') : daysT('reminderBefore', { count: offset }) }], missedPolicy: 'skip' });
-  }).filter(Boolean);
-  try { await Promise.all(tasks); return { ok: true }; } catch (error) { console.error('[Days] reminder sync failed', error); return { ok: false, reason: 'failed' }; }
+  var tasks = event.reminders.offsets.map(function (offset) { return daysReminderTask(event, offset); }).filter(Boolean);
+  try { await Promise.all(tasks.map(function (task) { return Tapp.scheduler.register(task); })); return { ok: true }; } catch (error) { console.error('[Days] reminder sync failed', error); return { ok: false, reason: 'failed' }; }
 }
 async function daysReconcileReminders(events) {
-  if (!daysPermissionGranted('scheduler:register') || !Tapp.scheduler) return;
-  var list = []; try { list = await Tapp.scheduler.list(); } catch (_) { return; }
+  if (!daysPermissionGranted('scheduler:register') || !Tapp.scheduler || typeof Tapp.scheduler.list !== 'function' || typeof Tapp.scheduler.register !== 'function' || typeof Tapp.scheduler.unregister !== 'function') return;
+  var list = await Tapp.scheduler.list();
   var items = Array.isArray(list) ? list : Array.isArray(list && list.tasks) ? list.tasks : [];
-  await Promise.all(items.filter(function (task) { return String(task && task.taskId || task && task.id || '').indexOf('days-reminder-') === 0; }).map(function (task) { return Tapp.scheduler.unregister(task.taskId || task.id).catch(function () {}); }));
-  for (var i = 0; i < events.length; i += 1) await daysSyncReminderTasks(events[i]);
+  var desired = {};
+  daysNormalizeEvents(events).forEach(function (event) { if (!event.reminders.enabled) return; event.reminders.offsets.forEach(function (offset) { var task = daysReminderTask(event, offset); if (task) desired[task.taskId] = task; }); });
+  var removals = [];
+  items.filter(function (task) { return String(task && (task.taskId || task.task_id || task.id) || '').indexOf('days-reminder-') === 0; }).forEach(function (task) {
+    var id = String(task.taskId || task.task_id || task.id); var expected = desired[id];
+    if (expected && daysReminderTaskMatches(task, expected)) { delete desired[id]; return; }
+    removals.push(Tapp.scheduler.unregister(id).catch(function () {}));
+  });
+  await Promise.all(removals);
+  await Promise.all(Object.keys(desired).map(function (id) { return Tapp.scheduler.register(desired[id]); }));
+}
+var daysReminderReconcilePromise = null;
+var daysReminderReconciledAt = 0;
+function daysRequestReminderReconcile(events, force) {
+  if (!daysPermissionGranted('scheduler:register') || !Tapp.scheduler) return Promise.resolve();
+  if (daysReminderReconcilePromise) return daysReminderReconcilePromise;
+  if (!force && Date.now() - daysReminderReconciledAt < 21600000) return Promise.resolve();
+  daysReminderReconcilePromise = daysReconcileReminders(events).then(function () { daysReminderReconciledAt = Date.now(); }).finally(function () { daysReminderReconcilePromise = null; });
+  return daysReminderReconcilePromise;
 }
 function daysBackupSnapshot() { return { format: DAYS_BACKUP_FORMAT, schemaVersion: DAYS_BACKUP_VERSION, exportedAt: new Date().toISOString(), data: { events: daysNormalizeEvents(daysPageState.events), categories: daysNormalizeCategories(daysPageState.categories), theme: daysNormalizeTheme(daysPageState.theme) } }; }
 function daysParseBackup(text) {
@@ -906,12 +928,13 @@ daysMountPage = async function (root) {
   }, signal ? { signal:signal } : undefined);
   root.addEventListener('change', function (event) { if (event.target.matches('[name="reminderEnabled"]')) daysToggleReminderOptions(root); if (event.target.matches('[data-import-file]')) { var file = event.target.files && event.target.files[0]; if (!file || file.size > 1048576) { daysSetText(root,'[data-import-preview]',daysT('importInvalid')); return; } file.text().then(function (text) { var area = root.querySelector('[data-import-json]'); area.value = text; daysPreviewImport(root); }).catch(console.error); } }, signal ? {signal:signal} : undefined);
   root.addEventListener('keydown', function (event) { if (event.key === 'Escape') { var panel = root.querySelector('[data-data-panel]'); if (panel && !panel.hidden) daysCloseDataPanel(root); } }, signal ? {signal:signal} : undefined);
+  daysRequestReminderReconcile(daysPageState.events, true).catch(function (error) { console.error('[Days] reminder reconcile failed', error); });
 };
 var daysDestroyPageBase = daysDestroyPage;
 daysDestroyPage = function () { if (typeof daysPageState.aiUnsubscribe === 'function') { try { daysPageState.aiUnsubscribe(); } catch (_) {} } if (daysPageState.aiTaskId && Tapp.ai && Tapp.ai.tasks && typeof Tapp.ai.tasks.cancel === 'function') Tapp.ai.tasks.cancel(daysPageState.aiTaskId).catch(function () {}); daysPageState.aiUnsubscribe = null; daysPageState.aiTaskId = null; daysDestroyPageBase(); };
 
 if (typeof Tapp !== 'undefined' && Tapp.lifecycle) {
   Tapp.lifecycle.onReady(function () { var root = document.querySelector('[data-days-page]'); if (root) daysMountPage(root).catch(console.error); });
-  if (typeof Tapp.lifecycle.onResume === 'function') Tapp.lifecycle.onResume(function () { var root = document.querySelector('[data-days-page]'); if (root) daysRequestGlassComposite(document.documentElement); });
+  if (typeof Tapp.lifecycle.onResume === 'function') Tapp.lifecycle.onResume(function () { var root = document.querySelector('[data-days-page]'); if (root) { daysRequestGlassComposite(document.documentElement); daysRequestReminderReconcile(daysPageState.events, false).catch(function (error) { console.error('[Days] reminder reconcile failed', error); }); } });
   Tapp.lifecycle.onDestroy(daysDestroyPage);
 }
