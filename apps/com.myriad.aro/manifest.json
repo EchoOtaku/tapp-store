@@ -1,14 +1,14 @@
 {
   "id": "com.myriad.aro",
   "name": "Aro",
-  "version": "1.1.1",
-  "description": "社交中心，统一管理消息、时间线、环网与个人资料",
+  "version": "1.2.0",
+  "description": "社交中心，统一管理消息、时间线与个人资料",
   "locales": {
     "en-US": {
-      "description": "Social hub for messages, timeline, ring network and profile in one place"
+      "description": "Social hub for messages, timeline and profile in one place"
     },
     "ja-JP": {
-      "description": "メッセージ・タイムライン・リングネット・プロフィールをまとめるソーシャルハブ"
+      "description": "メッセージ・タイムライン・プロフィールをまとめるソーシャルハブ"
     }
   },
   "author": {
@@ -32,7 +32,6 @@
     "federation:post",
     "federation:channel",
     "federation:room",
-    "federation:ring",
     "federation:message",
     "federation:files",
     "platform:read",

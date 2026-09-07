@@ -2228,85 +2228,11 @@ async function doFollow() {
 
 // → feedCompose.js
 
-// → ringsUi.js
-
 // ==================== Event Binding ====================
 function bindEvents() {
   // Aro nav
   document.querySelectorAll('.aro-nav-item').forEach(function (btn) {
     btn.addEventListener('click', function () { switchView(btn.dataset.view); });
-  });
-
-  // Ring create dialog
-  var ringCreateOpenBtn = $('ring-create-open-btn');
-  if (ringCreateOpenBtn) ringCreateOpenBtn.addEventListener('click', function () {
-    if (!requireAdminAction()) return;
-    var d = $('ring-create-dialog');
-    if (d) {
-      showAroOverlay(d);
-    }
-    if (typeof updateRingCreateCategoryVisibility === 'function') updateRingCreateCategoryVisibility();
-  });
-  if (typeof initRingCreateSelects === 'function') initRingCreateSelects();
-  else if (typeof initAroSelect === 'function') {
-    initAroSelect('ring-type-select');
-    initAroSelect('ring-brew-category-select');
-  }
-  var ringTypeSelect = $('ring-type-select');
-  if (ringTypeSelect) ringTypeSelect.addEventListener('change', function () {
-    if (typeof updateRingCreateCategoryVisibility === 'function') updateRingCreateCategoryVisibility();
-  });
-  var ringCreateClose = $('ring-create-close');
-  if (ringCreateClose) ringCreateClose.addEventListener('click', function () {
-    var d = $('ring-create-dialog');
-    if (d) aroDismiss(d, { ms: 170 });
-  });
-  var ringCreateOverlay = $('ring-create-dialog');
-  if (ringCreateOverlay) ringCreateOverlay.addEventListener('click', function (e) {
-    if (e.target === ringCreateOverlay) aroDismiss(ringCreateOverlay, { ms: 170 });
-  });
-
-  // Ring create submit
-  var createRingBtn = $('create-ring-btn');
-  if (createRingBtn) createRingBtn.addEventListener('click', doCreateRing);
-  var ringNameInput = $('ring-name-input');
-  if (ringNameInput) ringNameInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); doCreateRing(); }
-  });
-
-  // Ring detail inline panel events
-  var ringBackBtn = $('ring-back-btn');
-  if (ringBackBtn) ringBackBtn.addEventListener('click', hideRingDetail);
-  var ringIdCopyBtn = $('ring-id-copy');
-  if (ringIdCopyBtn) ringIdCopyBtn.addEventListener('click', copyRingId);
-  var ringSyncBtn = $('ring-sync-btn');
-  if (ringSyncBtn) ringSyncBtn.addEventListener('click', doTriggerSync);
-  var ringManageBtn = $('ring-manage-btn');
-  if (ringManageBtn) ringManageBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    var dd = $('ring-manage-dropdown');
-    if (dd) dd.classList.toggle('open');
-  });
-  var ringLeaveBtn2 = $('ring-leave-btn');
-  if (ringLeaveBtn2) ringLeaveBtn2.addEventListener('click', async function () {
-    var dd = $('ring-manage-dropdown'); if (dd) dd.classList.remove('open');
-    if (state.activeRingId && (await aroConfirm(lang.leaveRingConfirm, true))) {
-      doLeaveRing(state.activeRingId);
-    }
-  });
-  // Close ring manage menu on outside click
-  pageListen(document, 'click', function (e) {
-    var dd = $('ring-manage-dropdown');
-    if (!dd || !dd.classList.contains('open')) return;
-    var wrap = dd.closest('.manage-wrap') || dd.parentElement;
-    if (wrap && wrap.contains(e.target)) return;
-    dd.classList.remove('open');
-  });
-  var ringAddPeerBtn = $('ring-add-peer-btn');
-  if (ringAddPeerBtn) ringAddPeerBtn.addEventListener('click', doAddPeer);
-  var ringPeerInput = $('ring-peer-input');
-  if (ringPeerInput) ringPeerInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); doAddPeer(); }
   });
 
   // Feed: refresh, tabs, follow, stat clicks
@@ -2790,9 +2716,6 @@ function bindEvents() {
   // List search (client-side filter)
   bindListSearch('conv-search', 'conv', function () {
     if (typeof renderConvList === 'function') renderConvList();
-  });
-  bindListSearch('ring-search', 'ring', function () {
-    if (typeof renderRingsSidebar === 'function') renderRingsSidebar();
   });
   bindListSearch('feed-search', 'feed', function () {
     if (typeof renderFeedContent === 'function') renderFeedContent();
