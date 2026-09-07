@@ -26,7 +26,7 @@
       "name": "足迹地球",
       "description": "可拖动旋转的 Owner 足迹与隐私聚合地球。",
       "icon": "◎",
-      "category": "visualization",
+      "category": "social",
       "defaultSize": "4x2",
       "sizes": ["2x2", "4x2", "4x4"],
       "entry": "widget/entry.js",
