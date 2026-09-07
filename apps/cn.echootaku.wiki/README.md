@@ -9,9 +9,9 @@
 - 当前管理员私有的 Markdown 草稿，约 1 秒防抖自动保存，内容未变化时不重复写入
 - 安全 Markdown AST → DOM 渲染；不执行原始 HTML，不使用不可信 `innerHTML`
 - 外链只显示为可复制 HTTPS 地址，不提供任意导航能力；异步剪贴板受限时回退到临时只读文本选择
-- HTTPS 图片与视频；视频固定 `controls`、`preload="metadata"`、不自动播放
+- HTTPS 图片与视频；媒体使用 `referrerpolicy="no-referrer"`，视频固定 `controls`、`preload="metadata"`、不自动播放
 - 媒体权限不可用或加载失败时显示占位、说明和原始 URL，正文保持可读
-- Markdown 导入/导出与 JSON 全量备份/恢复；导入始终由管理员主动触发
+- Markdown 导入/导出与 JSON 全量备份/恢复；JSON 导入和导出均采用 10 MiB 产品上限，导入始终由管理员主动触发
 - 70% / 85% / 95% owner 总用量提示、6 MiB 产品软预算与发布临时空间预留
 - 中、英、日三语；亮/暗主题变量、安全区域、响应式、键盘焦点与 reduced motion
 
@@ -49,11 +49,13 @@ JSON 全量恢复在写第一篇前先写共享 pending 意图，再写带同一
 
 | 权限 | 用途 |
 | --- | --- |
-| `storage:read` | 读取共享正文、私有草稿与用量；调用 `Tapp.file.download` |
+| `storage:read` | 读取共享正文、私有草稿与 owner 用量 |
 | `storage:write` | 管理员私有草稿和 owner/admin 共享发布 |
 | `ui:confirm` | 覆盖、删除、备份恢复与孤儿清理确认 |
 | `ui:notification` | 操作结果提示 |
 | `network:fetch` | 允许沙箱加载远程 HTTPS 图片/视频；游客是否可用取决于站点动态授权 |
+
+当前契约中的 `Tapp.file.download` 是 public action，不额外消耗 `storage:read`。Wiki 的 10 MiB JSON 上限用于保证导入/导出对称，并不是宿主文件下载的硬上限。
 
 没有声明 `ui:openUrl` 与 `openUrls`。外部地址只可复制，不会打开新窗口或跳转。
 

@@ -52,13 +52,14 @@ test('copy-only external links expose a button and inert URL text', () => {
   assert.equal(nodes.some((node) => node.tagName === 'a'), false);
 });
 
-test('video rendering uses controls and metadata preload without autoplay', () => {
+test('video rendering uses privacy-preserving metadata preload without autoplay', () => {
   const document = new FakeDocument();
   const container = new FakeNode('main');
   renderMarkdown(document, container, parseMarkdown('![Tour](https://cdn.example/tour.mp4)'));
   const video = walk(container).find((node) => node.tagName === 'video');
   assert.equal(video.attributes.controls, '');
   assert.equal(video.attributes.preload, 'metadata');
+  assert.equal(video.attributes.referrerpolicy, 'no-referrer');
   assert.equal(Object.hasOwn(video.attributes, 'autoplay'), false);
 });
 

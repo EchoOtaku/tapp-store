@@ -26,7 +26,7 @@ test('page styling uses the current host theme and safe-area contract', () => {
 test('manifest stays on the current Layer Manifest shape', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(appRoot, 'manifest.json'), 'utf8'));
   assert.equal(manifest.name, 'Wiki');
-  assert.equal(manifest.version, '0.1.5');
+  assert.equal(manifest.version, '0.1.6');
   assert.equal(manifest.core.entry, 'core.js');
   assert.equal(manifest.page.template, 'page.html');
   assert.equal(manifest.page.styles, 'page.css');

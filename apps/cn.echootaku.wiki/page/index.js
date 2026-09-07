@@ -732,7 +732,7 @@ function bindEvents() {
     if (event.key === 'Escape' && !byId('manage-panel').hidden) { event.preventDefault(); closeManage(); return; }
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && editor) {
       event.preventDefault();
-      publishEditor();
+      handleAction('publish');
       return;
     }
     if (event.key === '/' && !isEditing && byId('editor-panel').hidden) {

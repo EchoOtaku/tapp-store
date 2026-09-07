@@ -63,13 +63,13 @@ function createMedia(document, node, labels) {
   var media = document.createElement(node.kind === 'video' ? 'video' : 'img');
   media.className = 'md-media-element';
   media.setAttribute('src', node.url);
+  media.setAttribute('referrerpolicy', 'no-referrer');
   if (node.kind === 'video') {
     media.setAttribute('controls', '');
     media.setAttribute('preload', 'metadata');
   } else {
     media.setAttribute('alt', node.alt || '');
     media.setAttribute('loading', 'lazy');
-    media.setAttribute('referrerpolicy', 'no-referrer');
   }
   media.addEventListener('error', showFallback);
   figure.appendChild(media);

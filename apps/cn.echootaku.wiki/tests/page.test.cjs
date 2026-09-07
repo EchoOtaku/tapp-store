@@ -32,6 +32,8 @@ class FakeDocument {
   constructor() {
     this.nodes = new Map();
     this.documentElement = new FakeNode('html');
+    this.listeners = {};
+    this.activeElement = new FakeNode('button');
   }
   getElementById(id) {
     if (!this.nodes.has(id)) this.nodes.set(id, new FakeNode('div'));
@@ -43,8 +45,9 @@ class FakeDocument {
     node.textContent = String(value);
     return node;
   }
+  querySelector() { return null; }
   querySelectorAll() { return []; }
-  addEventListener() {}
+  addEventListener(name, handler) { this.listeners[name] = handler; }
 }
 
 function walk(node, out = []) {
@@ -76,12 +79,12 @@ function createPageHarness(options = {}) {
   };
 
   class FakeSession {
-    constructor(options) {
-      this.onChange = options.onChange;
+    constructor(sessionOptions) {
+      this.onChange = sessionOptions.onChange;
       this.state = {
         loading: false,
         error: null,
-        canManage: false,
+        canManage: Boolean(options.canManage),
         roleResolved: true,
         snapshot: {
           catalog: { items: [item] },
@@ -131,6 +134,13 @@ function createPageHarness(options = {}) {
     buildNavigation: (items) => items.map((entry) => ({ ...entry, children: [] })),
   };
   class FakeRepository {
+    async getLatestNewDraft() { return null; }
+    async getDraft() { return null; }
+    async saveDraft() {}
+    async publish(value) {
+      if (options.publish) return options.publish(value);
+      return { article: value };
+    }
     async restoreBackup() { return { catalog: { items: [item] } }; }
   }
 
@@ -141,7 +151,13 @@ function createPageHarness(options = {}) {
     if (request === './renderer.js') return renderer;
     if (request === './presentation.js') return presentation;
     if (request === './repository.js') return { WikiRepository: FakeRepository };
-    if (request === './draft-saver.js') return { DraftSaver: class {} };
+    if (request === './draft-saver.js') {
+      return {
+        DraftSaver: class {
+          hasPending() { return false; }
+        },
+      };
+    }
     if (request === './clipboard.js') return { copyText: async () => true };
     if (request === './domain.js') return {
       MAX_ARTICLE_BYTES: 1024,
@@ -169,6 +185,26 @@ function createPageHarness(options = {}) {
   return {
     document,
     ready: () => ready(),
+    openNewArticle: async () => {
+      document.getElementById('wiki-app').listeners.click({
+        target: {
+          closest(selector) {
+            return selector === '[data-action]' ? { dataset: { action: 'create-article' } } : null;
+          },
+        },
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+    },
+    publishWithShortcut: () => {
+      document.listeners.keydown({
+        ctrlKey: true,
+        metaKey: false,
+        key: 's',
+        target: document.getElementById('editor-field-markdown'),
+        preventDefault() {},
+      });
+    },
     importJson: async (content) => {
       const input = document.getElementById('json-file');
       const target = { files: [{ size: Buffer.byteLength(content), text: async () => content }], value: 'backup.json' };
@@ -204,4 +240,25 @@ test('post-restore refresh failures are reported as operation failures', async (
   await harness.importJson('{}');
 
   assert.match(harness.document.getElementById('status-banner').textContent, /^操作失败: refresh failed$/);
+});
+
+test('keyboard publishes wait for the active management write', async () => {
+  let publishCalls = 0;
+  const pendingPublish = new Promise(() => {});
+  const harness = createPageHarness({
+    canManage: true,
+    publish: async () => {
+      publishCalls += 1;
+      return pendingPublish;
+    },
+  });
+  await harness.ready();
+  await harness.openNewArticle();
+
+  harness.publishWithShortcut();
+  harness.publishWithShortcut();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(publishCalls, 1);
 });

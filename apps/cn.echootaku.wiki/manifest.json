@@ -1,7 +1,7 @@
 {
   "id": "cn.echootaku.wiki",
   "name": "Wiki",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "minSystemVersion": "0.3.36",
   "description": "由管理员维护、面向所有访客只读开放的轻量知识库。",
   "locales": {
