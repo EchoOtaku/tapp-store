@@ -1,10 +1,10 @@
 {
   "$schema": "https://myriad.you/schemas/tapp-store-v1.json",
   "name": "Myriad Official Tapp Store",
-  "version": "1.0.57",
+  "version": "1.0.58",
   "api_version": "2",
   "base_url": "https://raw.githubusercontent.com/Myriad-You/tapp-store/main",
-  "updated_at": "2026-09-07T07:56:51.126Z",
+  "updated_at": "2026-09-07T09:04:13.485Z",
   "maintainer": {
     "name": "Myriad Team",
     "email": "tapp@myriad.you",
@@ -2367,6 +2367,94 @@
       "verified": false,
       "created_at": "2026-09-07T03:43:32.212Z",
       "updated_at": "2026-09-07T03:43:32.212Z"
+    },
+    {
+      "id": "cn.echootaku.persona-stickers",
+      "name": "人设表情工坊",
+      "version": "0.3.3",
+      "description": "使用用户 Agent 人设，通过 Emoji、颜文字或单张参考图生成独立 PNG 表情图片",
+      "long_description": "人设表情工坊以用户已启用且已生成图片的 Agent 人设作为角色身份基准。用户可在 Emoji、颜文字和图片表情三种方式中任选一种：前两种直接提供情绪提示；图片表情模式只允许上传单张 PNG、JPEG 或 WebP，用来参考表情、姿势和构图，不替换 Agent 的身份与外观。还可填写一段高优先级补充提示词，在固定身份和输出规则内优先控制动作、表情、道具、构图与情绪强度。每次通过受治理的 Myriad AI 图片任务生成单张 1024×1024 的独立 PNG 表情图片。若尚无人设图，应用会先提示用户在 Myriad 中创建并生成人设。本地参考图只保留在当前页面内存，不写入 Storage；结果可在宿主缓存有效期内查看大图，并由 Myriad 宿主读取当前缓存、下载为真实 PNG。",
+      "locales": {
+        "en-US": {
+          "name": "Persona Sticker Lab",
+          "description": "Turn your Agent Persona into a standalone PNG expression using an Emoji, kaomoji, or one image reference",
+          "long_description": "Persona Sticker Lab uses the user's enabled Agent persona with a generated portrait as the character identity anchor. Choose exactly one cue mode: Emoji, kaomoji, or an expression image. The first two provide a direct emotional cue; image mode accepts exactly one PNG, JPEG, or WebP to guide only the expression, pose, and composition without replacing the Agent's identity or appearance. An optional high-priority prompt can direct the action, expression, props, framing, and emotional intensity while preserving the fixed identity and output rules. Each governed Myriad AI image task creates one standalone 1024×1024 PNG sticker. If no usable persona portrait exists, the app directs the user to create and generate one in Myriad first. A local cue image stays only in current-page memory and is never written to Storage. Results can be viewed full size while the host cache remains available, and Myriad can read the current cache and download the actual PNG."
+        },
+        "ja-JP": {
+          "name": "ペルソナスタンプ工房",
+          "description": "Agent ペルソナと Emoji・顔文字・1枚の参考画像から、単体PNG表情画像を生成します",
+          "long_description": "ペルソナスタンプ工房は、有効で画像が生成済みのユーザー Agent ペルソナをキャラクター本人の基準にします。Emoji、顔文字、表情画像から一つだけ選択します。前二つは感情を直接指示し、表情画像モードでは PNG・JPEG・WebP を一枚だけ受け付け、表情・ポーズ・構図だけを参考にして Agent の本人性や外見を置き換えません。任意の高優先度プロンプトで、固定された本人性と出力ルールを保ちながら、動き、表情、小物、構図、感情の強さを優先して指定できます。管理された Myriad AI 画像タスクごとに、独立した 1024×1024 PNG スタンプを一枚生成します。利用可能なペルソナ画像がない場合は、先に Myriad で作成・生成するよう案内します。ローカル参考画像は現在のページメモリだけに保持され、Storage には書き込みません。結果はホストキャッシュが有効な間拡大表示でき、Myriad ホストが現在のキャッシュを読み取って実際の PNG としてダウンロードできます。"
+        }
+      },
+      "author": {
+        "name": "EchoOtaku",
+        "url": "https://github.com/EchoOtaku"
+      },
+      "license": "MIT",
+      "homepage": "https://github.com/Myriad-You/tapp-store/tree/main/apps/cn.echootaku.persona-stickers",
+      "repository": "https://github.com/Myriad-You/tapp-store",
+      "category": "ai",
+      "tags": [
+        "AI 生图",
+        "人设",
+        "表情包",
+        "贴纸",
+        "角色一致性"
+      ],
+      "permissions": [
+        "ai:image"
+      ],
+      "icon_svg": "<svg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><rect x='4' y='3.5' width='15' height='15' rx='4' stroke='currentColor' stroke-width='1.7'/><path d='M8.2 10.3h.01M14.8 10.3h.01M8.5 14c1 .8 2.1 1.2 3.3 1.2 1.3 0 2.4-.4 3.4-1.2' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/><path d='m15.5 18.5 3.7 2-.7-4.2' stroke='currentColor' stroke-width='1.7' stroke-linejoin='round'/></svg>",
+      "theme_color": "#6558D9",
+      "screenshots": [],
+      "preview": {
+        "version": 1,
+        "type": "snapshot",
+        "html": "apps/cn.echootaku.persona-stickers/preview.html",
+        "styles": [
+          "apps/cn.echootaku.persona-stickers/page.css",
+          "apps/cn.echootaku.persona-stickers/preview.css"
+        ],
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "fit": "cover",
+        "focus": {
+          "x": 0.52,
+          "y": 0.48
+        },
+        "theme": "light"
+      },
+      "download": {
+        "manifest": "apps/cn.echootaku.persona-stickers/manifest.json",
+        "code": "apps/cn.echootaku.persona-stickers/core.js",
+        "readme": "apps/cn.echootaku.persona-stickers/README.md",
+        "page_styles": "apps/cn.echootaku.persona-stickers/page.css",
+        "page_template": "apps/cn.echootaku.persona-stickers/page.html",
+        "i18n": {
+          "en-US": "apps/cn.echootaku.persona-stickers/i18n/en-US.json",
+          "ja-JP": "apps/cn.echootaku.persona-stickers/i18n/ja-JP.json",
+          "zh-CN": "apps/cn.echootaku.persona-stickers/i18n/zh-CN.json"
+        },
+        "modules": {
+          "page/app-controller.js": "apps/cn.echootaku.persona-stickers/page/app-controller.js",
+          "page/dom-app.js": "apps/cn.echootaku.persona-stickers/page/dom-app.js",
+          "page/domain.js": "apps/cn.echootaku.persona-stickers/page/domain.js",
+          "page/file-reader.js": "apps/cn.echootaku.persona-stickers/page/file-reader.js",
+          "page/index.js": "apps/cn.echootaku.persona-stickers/page/index.js",
+          "page/lifecycle.js": "apps/cn.echootaku.persona-stickers/page/lifecycle.js",
+          "page/modal-accessibility.js": "apps/cn.echootaku.persona-stickers/page/modal-accessibility.js",
+          "page/task-runner.js": "apps/cn.echootaku.persona-stickers/page/task-runner.js"
+        }
+      },
+      "size": 106114,
+      "downloads": 0,
+      "rating": 0,
+      "featured": false,
+      "verified": false,
+      "created_at": "2026-09-07T09:04:13.485Z",
+      "updated_at": "2026-09-07T09:04:13.485Z"
     }
   ],
   "last_updated": "2026-08-04T09:47:35Z"
