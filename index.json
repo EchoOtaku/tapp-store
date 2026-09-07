@@ -1,10 +1,10 @@
 {
   "$schema": "https://myriad.you/schemas/tapp-store-v1.json",
   "name": "Myriad Official Tapp Store",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "api_version": "2",
   "base_url": "https://raw.githubusercontent.com/Myriad-You/tapp-store/main",
-  "updated_at": "2026-09-07T03:43:32.212Z",
+  "updated_at": "2026-09-07T07:40:36.160Z",
   "maintainer": {
     "name": "Myriad Team",
     "email": "tapp@myriad.you",
@@ -2202,7 +2202,7 @@
     {
       "id": "ink.kei.arknights",
       "name": "Arknights",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "description": "明日方舟玩家个人信息展示",
       "long_description": "明日方舟玩家个人信息展示：绑定森空岛账号后展示博士等级、助战干员、干员收藏、时装、蚀刻章，以及集成战略 / 剿灭 / 保全派驻等游戏数据。内置干员与时装图鉴（职业 / 稀有度筛选），并提供 4x2 / 4x4 主页小组件。玩家数据以共享快照展示，绑定与刷新由房间管理员维护，其他用户只读。跟随宿主亮暗主题，内置简体中文 / English。",
       "locales": {
@@ -2237,6 +2237,7 @@
         "ui:openUrl",
         "widget:register"
       ],
+      "icon": "♜",
       "screenshots": [],
       "preview": {
         "version": 1,
@@ -2261,6 +2262,8 @@
         "manifest": "apps/ink.kei.arknights/manifest.json",
         "code": "apps/ink.kei.arknights/core.js",
         "readme": "apps/ink.kei.arknights/README.md",
+        "styles": "apps/ink.kei.arknights/core.css",
+        "widget_styles": "apps/ink.kei.arknights/widget/styles.css",
         "page_styles": "apps/ink.kei.arknights/page/styles.css",
         "page_template": "apps/ink.kei.arknights/page/template.html",
         "i18n": {
@@ -2278,13 +2281,13 @@
           "widget/player-summary.js": "apps/ink.kei.arknights/widget/player-summary.js"
         }
       },
-      "size": 962091,
+      "size": 962929,
       "downloads": 0,
       "rating": 0,
       "featured": false,
       "verified": false,
       "created_at": "2026-09-06T11:32:56.291Z",
-      "updated_at": "2026-09-06T23:39:15.146Z"
+      "updated_at": "2026-09-07T07:40:36.160Z"
     },
     {
       "id": "cn.wyyzxzyg.daily-brief",
